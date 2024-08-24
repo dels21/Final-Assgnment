@@ -33,7 +33,8 @@ class AuthenticationController extends Controller
             'linkedin_username' => $validatedData['linkedin_username'],
             'fields_of_work' => $works,
             'mobile_number' => $validatedData['mobile_number'],
-            'register_price' => rand(100000,125000),
+            'register_price' => rand(100000, 125000),
+            'profile_path' => 'profile_dummy/1.jpeg',
         ]);
 
         // Auth::login($user);
@@ -54,10 +55,8 @@ class AuthenticationController extends Controller
             Auth::login($user);
 
             return redirect()->route('user.index');
-            // return redirect('/');
         }
 
-        // If login fails, redirect back with an error message
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');
@@ -65,16 +64,12 @@ class AuthenticationController extends Controller
 
     public function logout(Request $request)
     {
-        // Log the user out
         Auth::logout();
 
-        // Invalidate the session
         $request->session()->invalidate();
 
-        // Regenerate the CSRF token
         $request->session()->regenerateToken();
 
-        // Redirect to the login page
         return redirect('/login');
     }
 
@@ -103,11 +98,9 @@ class AuthenticationController extends Controller
                 'price' => $price
             ]);
         } else {
-            // Payment is exact
-            // Mark payment as successful and handle business logic
             $user->has_paid = true;
             $user->save();
-            return redirect()->back()->with('success', 'Payment successful!');
+            return redirect()->route('user.index')->with('success', 'Your account is registered');
         }
     }
 
@@ -133,9 +126,7 @@ class AuthenticationController extends Controller
         $user = Auth::user();
 
         if ($action === 'accept') {
-            // Add the overpaid amount to the user's wallet balance
             $amount = $request->input('amount');
-            // Assume a wallet balance attribute exists on the user
             $user->coins += $amount;
             $user->has_paid = true;
             $user->save();
@@ -143,7 +134,6 @@ class AuthenticationController extends Controller
 
             return redirect()->route('user.index')->with('success', 'The excess amount has been added to your wallet.');
         } else {
-            // Redirect back to the payment form to correct the amount
             return redirect()->route('pay')->with('error', 'Please enter the correct payment amount.');
         }
     }
